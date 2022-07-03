@@ -9,7 +9,7 @@ class PledgeSerializers(serializers.Serializer):
     amount = serializers.TimeField()
     comment = serializers.CharField(max_length=200)
     project_id = serializers.IntegerField()
-    supporter = serializers.CharField(max_length=200)
+    supporter = serializers.ReadOnlyField(source='supporter.id')
 
     def create(self, validated_data):
         return Pledge.objects.create(**validated_data)
