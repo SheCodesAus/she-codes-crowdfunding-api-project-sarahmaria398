@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Project, Pledge
-from .serializers import ProjectSerializers, PledgeSerializers, ProjectDetailSerializer
+from .serializers import ProjectSerializers, PledgeSerializers, ProjectDetailSerializer, PledgeDetailSerializer
 from django.http import Http404
 from rest_framework import status, permissions
 from .permissions import IsOwnerOrReadOnly
@@ -23,6 +23,34 @@ class PledgeList(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
+
+class PledgeDetail(APIView):
+
+
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def delete(self, request, pk):
+        pledge = Pledge.objects.get(pk=pk)
+        if pledge.supporter == request.user:
+            pledge.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    def get_object(self, pk):
+        try:
+            pledge = Pledge.objects.get(pk=pk)
+            self.check_object_permissions(self.request, pledge)
+            return pledge
+        except Pledge.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        pledges = self.get_object(pk)
+        serializer = PledgeDetailSerializer(pledges)
+        return Response(serializer.data)
+
 
 
 class ProjectList(APIView):
