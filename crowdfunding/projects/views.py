@@ -10,14 +10,23 @@ from .permissions import IsOwnerOrReadOnly
 class PledgeList(APIView):
     
     def get(self, request):
-        pledges = Pledge.objects.all()
+        if request.GET.get('project_id'):
+            pledges = Pledge.objects.filter(project_id = request.GET.get('project_id'))
+        
+        else:
+            pledges = Pledge.objects.all()
         serializer = PledgeSerializers(pledges, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK
             )
 
+
     def post(self, request):
         serializer = PledgeSerializers(data=request.data)
         if serializer.is_valid():
+            project = Project.objects.get(pk=serializer.validated_data['project_id'])
+            if project.owner == request.user:
+                return Response('You cannot pledge to your own project.', status=status.HTTP_401_UNAUTHORIZED
+        )
             serializer.save(supporter=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED
             )
