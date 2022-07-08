@@ -3,9 +3,10 @@ from django.shortcuts import render
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 from .models import CustomUser
 from .serializers import CustomUserSerializer
+from .permissions import IsOwnerOrReadOnly
 
 class CustomUserList(APIView):
     def get(self, request):
@@ -22,6 +23,8 @@ class CustomUserList(APIView):
         
 
 class CustomUserDetail(APIView):
+
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     
     def get_object(self, pk):
         try:
@@ -53,4 +56,14 @@ class CustomUserDetail(APIView):
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    def delete(self, request, pk):
+        user = self.get_object(pk)
+        if user.id == request.user:
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            status=status.HTTP_401_UNAUTHORIZED
         )
