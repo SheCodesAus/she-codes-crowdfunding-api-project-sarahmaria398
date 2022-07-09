@@ -3,10 +3,9 @@ from django.shortcuts import render
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status
 from .models import CustomUser
 from .serializers import CustomUserSerializer
-from .permissions import IsOwnerOrReadOnly
 
 class CustomUserList(APIView):
     def get(self, request):
@@ -23,8 +22,6 @@ class CustomUserList(APIView):
         
 
 class CustomUserDetail(APIView):
-
-    # permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     
     def get_object(self, pk):
         try:
@@ -37,31 +34,38 @@ class CustomUserDetail(APIView):
         serializer = CustomUserSerializer(user)
         return Response(serializer.data)
 
-    def put(self, request, pk):
-        user = self.get_object(pk)
-        data = request.data
-        serializer = CustomUserSerializer(
-            instance=user,
-            data=data,
-            partial=True
-        )
 
-        if serializer.is_valid():
-            serializer.save()
+    def put(self, request, pk):
+    
+        user = self.get_object(pk)
+        if user == request.user:
+            data = request.data
+            serializer = CustomUserSerializer(
+                instance=user,
+                data=data,
+                partial=True
+            )
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+
             return Response(
-                serializer.data,
-                status=status.HTTP_200_OK
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_401_UNAUTHORIZED
         )
 
 
     def delete(self, request, pk):
         user = self.get_object(pk)
-        if user.id == request.user.id:
+        if user == request.user:
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
