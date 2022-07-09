@@ -24,7 +24,7 @@ class CustomUserList(APIView):
 
 class CustomUserDetail(APIView):
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     
     def get_object(self, pk):
         try:
@@ -61,7 +61,7 @@ class CustomUserDetail(APIView):
 
     def delete(self, request, pk):
         user = self.get_object(pk)
-        if user.id == request.user:
+        if user.id == request.user.id:
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
