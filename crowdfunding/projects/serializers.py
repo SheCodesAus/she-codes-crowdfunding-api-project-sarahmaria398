@@ -6,7 +6,7 @@ from .models import Project, Pledge
 
 class PledgeSerializers(serializers.Serializer):
     id = serializers.ReadOnlyField()
-    amount = serializers.TimeField()
+    amount = serializers.IntegerField()
     comment = serializers.CharField(max_length=200)
     project_id = serializers.IntegerField()
     supporter = serializers.ReadOnlyField(source='supporter.id')
@@ -18,7 +18,7 @@ class ProjectSerializers(serializers.Serializer):
     id = serializers.ReadOnlyField()
     title = serializers.CharField(max_length=200)
     description = serializers.CharField(max_length=None)
-    goal = serializers.TimeField()
+    goal = serializers.IntegerField()
     image = serializers.URLField()
     date_created = serializers.DateTimeField()
     owner = serializers.ReadOnlyField(source='owner.id')

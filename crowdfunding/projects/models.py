@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 
 class Pledge(models.Model):
-    amount = models.TimeField()
+    amount = models.IntegerField(default=20)
     comment = models.CharField(max_length=200)
     project = models.ForeignKey(
         'Project',
@@ -19,7 +19,7 @@ class Pledge(models.Model):
 class Project(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    goal = models.TimeField()
+    goal = models.IntegerField(default=200)
     image = models.URLField()
     date_created = models.DateTimeField()
     owner = models.ForeignKey(get_user_model(), 
